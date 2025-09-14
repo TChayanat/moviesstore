@@ -1,15 +1,5 @@
-from django.db.models import Count
-
-def top_comments(request):
-    # Annotate each review with the number of likes and order by that count descending
-    reviews = Review.objects.annotate(num_likes=Count('like')).order_by('-num_likes', '-date')
-    template_data = {
-        'title': 'Top Comments',
-        'reviews': reviews,
-    }
-    return render(request, 'movies/top_comments.html', {'template_data': template_data})
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Movie, Review, Like
+from .models import Movie, Review
 from django.contrib.auth.decorators import login_required
 
 def index(request):
@@ -68,15 +58,4 @@ def edit_review(request, id, review_id):
 def delete_review(request, id, review_id):
     review = get_object_or_404(Review, id=review_id, user=request.user)
     review.delete()
-    return redirect('movies.show', id=id)
-
-@login_required
-def like_review(request, id, review_id):
-    review = get_object_or_404(Review, id=review_id)
-    if Like.objects.filter(review=review, user=request.user).exists():
-        return redirect('movies.show', id=id)
-    like = Like()
-    like.review = review
-    like.user = request.user
-    like.save()
     return redirect('movies.show', id=id)

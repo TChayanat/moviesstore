@@ -22,12 +22,3 @@ class Review(models.Model):
         on_delete=models.CASCADE)
     def __str__(self):
         return str(self.id) + ' - ' + self.movie.name
-    
-class Like(models.Model):
-    id = models.AutoField(primary_key=True)
-    review = models.ForeignKey(Review,
-        on_delete=models.CASCADE)
-    user = models.ForeignKey(User,
-        on_delete=models.CASCADE)
-    def __str__(self):
-        return str(self.id) + ' - ' + self.review.movie.name + ' - ' + self.user.username

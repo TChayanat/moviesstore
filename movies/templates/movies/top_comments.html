@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<div class="container mt-4" style="padding-bottom: 50px;">
+	<h2>All Comments (Ordered by Likes)</h2>
+	<hr />
+	<ul class="list-group">
+		{% for review in template_data.reviews %}
+		<li class="list-group-item pb-3 pt-3">
+			<h5 class="card-title">Review by {{ review.user.username }}</h5>
+			<h6 class="card-subtitle mb-2 text-muted">{{ review.date }}</h6>
+			<p class="card-text">{{ review.comment }}</p>
+			<div class="d-flex align-items-center gap-2">
+				<span class="badge bg-success">Likes: {{ review.num_likes }}</span>
+			</div>
+		</li>
+		{% empty %}
+		<li class="list-group-item">No comments found.</li>
+		{% endfor %}
+	</ul>
+</div>
+{% endblock content %}

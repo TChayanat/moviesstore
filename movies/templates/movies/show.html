@@ -42,14 +42,23 @@
 				{{ review.date }}
 				</h6>
 				<p class="card-text">{{ review.comment }}</p>
-				{% if user.is_authenticated and user == review.user %}
-					<a class="btn btn-primary"
-						href="{% url 'movies.edit_review' id=template_data.movie.id review_id=review.id %}">Edit
-					</a>
-					<a class="btn btn-danger"
-						href="{% url 'movies.delete_review' id=template_data.movie.id review_id=review.id %}">Delete
-					</a>
-				{% endif %}
+				<div class="d-flex align-items-center gap-2">
+					{% if user.is_authenticated %}
+						<form method="post" action="{% url 'movies.like_review' id=template_data.movie.id review_id=review.id %}" style="display:inline;">
+							{% csrf_token %}
+							<button type="submit" class="btn btn-outline-success btn-sm me-2">
+								Like
+							</button>
+						</form>
+					{% endif %}
+					<span class="badge bg-success">Likes: {{ review.like_set.count }}</span>
+					{% if user.is_authenticated and user == review.user %}
+						<a class="btn btn-primary btn-sm ms-2"
+							href="{% url 'movies.edit_review' id=template_data.movie.id review_id=review.id %}">Edit</a>
+						<a class="btn btn-danger btn-sm ms-1"
+							href="{% url 'movies.delete_review' id=template_data.movie.id review_id=review.id %}">Delete</a>
+					{% endif %}
+				</div>
 			</li>
 			{% endfor %}
 		</ul>

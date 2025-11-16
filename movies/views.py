@@ -1,17 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Movie, Review, HiddenMovie
+from .models import Movie, Review
 from django.contrib.auth.decorators import login_required
 
 def index(request):
     search_term = request.GET.get('search')
-    if request.user.is_authenticated:
-        hidden_movies = HiddenMovie.objects.filter(user=request.user).values_list('movie_id', flat=True)
-    else:
-        hidden_movies = []
     if search_term:
-        movies = Movie.objects.filter(name__icontains=search_term).exclude(id__in=hidden_movies)
+        movies = Movie.objects.filter(name__icontains=search_term)
     else:
-        movies = Movie.objects.exclude(id__in=hidden_movies)
+        movies = Movie.objects.all()
     template_data = {}
     template_data['title'] = 'Movies'
     template_data['movies'] = movies
@@ -21,14 +17,10 @@ def index(request):
 def show(request, id):
     movie = Movie.objects.get(id=id)
     reviews = Review.objects.filter(movie=movie)
-    is_hidden = False
-    if request.user.is_authenticated:
-        is_hidden = HiddenMovie.objects.filter(movie=movie, user=request.user).exists()
     template_data = {}
     template_data['title'] = movie.name
     template_data['movie'] = movie
     template_data['reviews'] = reviews
-    template_data['is_hidden'] = is_hidden
     return render(request, 'movies/show.html', {'template_data': template_data})
 
 @login_required
@@ -66,29 +58,4 @@ def edit_review(request, id, review_id):
 def delete_review(request, id, review_id):
     review = get_object_or_404(Review, id=review_id, user=request.user)
     review.delete()
-    return redirect('movies.show', id=id)
-
-@login_required
-def hide_movie(request, id):
-    movie = get_object_or_404(Movie, id=id)
-    hidden_movie = HiddenMovie()
-    hidden_movie.movie = movie
-    hidden_movie.user = request.user
-    hidden_movie.save()
-    return redirect('movies.index')
-
-@login_required
-def hidden_movies(request):
-    hidden_movie_links = HiddenMovie.objects.filter(user=request.user).select_related('movie')
-    movies = [hm.movie for hm in hidden_movie_links]
-    template_data = {
-        'title': 'Hidden Movies',
-        'movies': movies,
-    }
-    return render(request, 'home/hidden_movies.html', {'template_data': template_data})
-
-@login_required
-def unhide_movie(request, id):
-    movie = get_object_or_404(Movie, id=id)
-    HiddenMovie.objects.filter(movie=movie, user=request.user).delete()
     return redirect('movies.show', id=id)

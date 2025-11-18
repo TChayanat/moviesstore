@@ -32,6 +32,8 @@ def login(request):
             auth_login(request, user)
             return redirect('home.index')
         
+from .models import UserProfile
+
 def signup(request):
     template_data = {}
     template_data['title'] = 'Sign Up'
@@ -42,7 +44,8 @@ def signup(request):
     elif request.method == 'POST':
         form = CustomUserCreationForm(request.POST, error_class=CustomErrorList)
         if form.is_valid():
-            form.save()
+            user = form.save()
+            UserProfile.objects.create(user=user)
             return redirect('home.index')
         else:
             template_data['form'] = form
@@ -56,3 +59,22 @@ def orders(request):
     template_data['orders'] = request.user.order_set.all()
     return render(request, 'accounts/orders.html', 
                   {'template_data': template_data})
+
+from .forms import UserProfileForm
+
+@login_required
+def profile(request):
+    try:
+        profile = request.user.userprofile
+    except UserProfile.DoesNotExist:
+        profile = UserProfile(user=request.user)
+
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            return redirect('accounts.profile')
+    else:
+        form = UserProfileForm(instance=profile)
+
+    return render(request, 'accounts/profile.html', {'form': form, 'profile': profile})
